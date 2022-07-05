@@ -18,6 +18,72 @@ typedef char * string;
 
 #define MAX_STRING_LEN 20
 
+/* -------- Funcoes do TAD -------- */
+
+typedef struct no {
+    string num;
+    struct no* prox;
+} no;
+
+int cria_lista(no **lista){
+    *lista = malloc(sizeof(no));
+    if(lista != NULL){
+        (*lista)->prox = NULL;
+        (*lista)->num = "*";
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+int insere_final(no **lista, string ent){
+    no *aux = *lista;
+    no *new = malloc(sizeof(no));
+    new->num = ent;
+    new->prox = NULL;
+
+    if (aux == NULL){
+        (*aux) = new;
+        return 0;
+    }
+
+    while (aux->prox != NULL){
+        if(strcomp(aux->num, ent) == 0) return 0;
+        aux = aux->prox;
+    }
+
+    if (strcomp(aux->num, ent) == 0) return 0;
+    aux->prox = new;
+
+    return 1;
+}
+
+int busca_lista(no **lista, string ent){
+    no *aux = *lista;
+  while(aux != NULL){
+    if(strcmp(aux->num, ent) == 0)
+      //Encontrado
+      return 0;
+    aux = aux->prox;
+  }
+  return -1;
+}
+
+void destroi_lista(no **lista){
+    no *aux = *lista;
+    no *next;
+    while (*aux != NULL){
+        next = aux->prox;
+        free(aux);
+        aux = next;
+    }
+}
+
+/* ------- Fim das funções do TAD --------*/
+
+typedef struct {
+    no **lista;
+} hash;
 
 unsigned converter(string s) {
    unsigned h = 0;
@@ -65,6 +131,41 @@ unsigned h_mul(unsigned x, unsigned B)
     return fmod(x * A, 1) * B;
 }
 
+void cria_hash(int tamanho, hash *ha){
+    ha->lista = malloc(sizeof(no*)*tamanho);
+    for (int i = 0; i < tamanho; i++){
+        ha->lista[i] = NULL;
+    }
+}    
+
+void destroi_hash(hash *ha, const int tamanho){
+    for (int i = 0; i < tamanho; i++) destroi_lista(&ha->lista[i]);
+}
+
+int inserir (hash *ha, string ent, unsigned (*f)(unsigned int)){
+    unsigned int pos;
+    unsigned int key = converter(ent);
+    pos = (*f)(key);
+    return insere_final(&(ha->lista[pos]), ent);
+}
+
+int busca_hash(hash *ha, string busca, unsigned (*f)(unsigned int)){
+    unsigned int pos;
+    unsigned int key = converter(busca);
+    pos = (*f)(key);
+    return(busca_lista(&(ha->lista[pos]), busca));
+}
+
+void printar_lista(no **node){
+    no *aux= *node;
+    printf("Lista: ");
+    while(aux != NULL){
+        printf("%s - ", aux->num);
+        aux = aux->prox;
+    }
+    printf("\n");
+}
+
 int main(int argc, char const *argv[])
 {
     const int N = 50000;
@@ -82,6 +183,7 @@ int main(int argc, char const *argv[])
     
 
     // cria tabela hash com hash por divisão
+
     
     // inserção dos dados na tabela hash com hash por divisão
     inicia_tempo();

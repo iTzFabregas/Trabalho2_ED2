@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 // Definição das variaveis que controlam a medição de tempo
 clock_t _ini, _fim;
@@ -9,6 +10,7 @@ clock_t _ini, _fim;
 unsigned char typedef bool;
 #define TRUE  1
 #define FALSE 0
+
 
 int* ler_inteiros(const char * arquivo, const int n)
 {
@@ -36,6 +38,25 @@ double finaliza_tempo()
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
+double desvio_padrao(double* tempos, int k)
+{
+    double sum = 0;
+    for (int i = 0; i < k; i++) {
+        sum += tempos[i];
+    }
+    double media = sum / 3;
+
+    double dp = 0;
+    for (int i = 0; i < k; i++) {
+        dp += (pow((tempos[i] - media),2));
+    }
+    dp = dp / 3;
+    dp = sqrt(dp);
+
+    return dp;
+}
+
+
 int main(int argc, char const *argv[])
 {
     const int N = 50000;
@@ -45,18 +66,30 @@ int main(int argc, char const *argv[])
     int* consultas = ler_inteiros("inteiros_busca.txt", N);
 
     // realiza busca sequencial
-    inicia_tempo();
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            if(consultas[i] == entradas[j]) {
-                encontrados++;
+    double soma_clocks = 0;
+    double tempos[3];
+    for (int k = 0; k < 3; k++) {
+
+        inicia_tempo();
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if(consultas[i] == entradas[j]) {
+                    encontrados++;
+                }
             }
         }
+        
+        tempos[k] = finaliza_tempo();
+        soma_clocks += tempos[k];
+        printf("Execucao numero: %d -> Itens encontrados:  %d -> Tempo de busca:  %fs\n", k+1, encontrados, tempos[k]);
+        encontrados = 0;
     }
-    double tempo_busca = finaliza_tempo();
 
-    printf("Tempo de busca    :\t%fs\n", tempo_busca);
-    printf("Itens encontrados :\t%d\n", encontrados);
+    double desvio = desvio_padrao(tempos, 3);
+
+    printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/3);
+    printf("--> Desvio padrao dos tempos :\t%f\n", desvio);
 
     return 0;
 }

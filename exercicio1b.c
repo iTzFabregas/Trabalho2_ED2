@@ -1,79 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 // Definição das variaveis que controlam a medição de tempo
 clock_t _ini, _fim;
 
 // Definição do tipo booleano
 unsigned char typedef bool;
+#define TRUE  1
+#define FALSE 0
 
-// Definição da lista
-typedef struct elemento{
-    int dado;
-    struct elemento *prox;
-}Elem;
 
-typedef struct elemento* Lista;
-
-Lista* cria_lista()
-{
-    Lista* li = (Lista*) malloc(sizeof(Lista));
-    if(li != NULL)
-        *li = NULL;
-    return li;
-}
-
-void libera_lista(Lista* li)
-{
-    if(li != NULL){
-        Elem* no;
-        while((*li) != NULL){
-            no = *li;
-            *li = (*li)->prox;
-            free(no);
-        }
-        free(li);
-    }
-}
-
-void insere_lista_inicio(Lista* lista, int dt)
-{
-    if(lista == NULL) {
-        return;
-    }
-    Elem* no;
-    no = (Elem*) malloc(sizeof(Elem));
-    if(no == NULL) {
-        return;
-    }
-    no->dado = dt;
-    no->prox = (*lista);
-    *lista = no;
-    return;
-}
-
-ler_inteiros(const char * arquivo, Lista* lista)
+int* ler_inteiros(const char * arquivo, const int n)
 {
     FILE* f = fopen(arquivo, "r");
 
-    for (int i = 0; !feof(f); i++) {
-        int num;
-        fscanf(f, "%d\n", &num);
-        insere_lista_inicio(lista, num);
-    }  
+    int * inteiros = (int *) malloc(sizeof(int) * n);
+
+    for (int i = 0; !feof(f); i++)
+        fscanf(f, "%d\n", &inteiros[i]);
+
     fclose(f);
-}
 
-void mover_para_frente(Lista* entradas, int index) {
-
-    int buffer = entradas[index];
-
-    for(int i = 0; i < index; i++) {
-        entradas[i+1] = entradas[i];
-    }
-    entradas[0] = buffer;
-    return entradas;
+    return inteiros;
 }
 
 void inicia_tempo()
@@ -88,42 +38,65 @@ double finaliza_tempo()
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
+double desvio_padrao(double* tempos, int k)
+{
+    double sum = 0;
+    for (int i = 0; i < k; i++) {
+        sum += tempos[i];
+    }
+    double media = sum / 3;
+
+    double dp = 0;
+    for (int i = 0; i < k; i++) {
+        dp += (pow((tempos[i] - media),2));
+    }
+    dp = dp / 3;
+    dp = sqrt(dp);
+
+    return dp;
+}
+
 
 int main(int argc, char const *argv[])
 {
     const int N = 50000;
     unsigned encontrados = 0;
-    Lista* entradas;
-    entradas = cria_lista();
 
-    Lista* consultas;
-    consultas = cria_lista();
-
-    entradas = ler_inteiros("inteiros_entrada.txt", N);
-    consultas = ler_inteiros("inteiros_busca.txt", N);
+    int* entradas = ler_inteiros("inteiros_entrada.txt", N);
+    int* consultas = ler_inteiros("inteiros_busca.txt", N);
 
     // realiza busca sequencia com realocação
-    inicia_tempo();
-    
-    Elem* cons = *consultas;
-    Elem* prev_entry;
-    Elem* entry = *entradas;
-    while(cons != NULL) {
-        while(entry != NULL) {
-            if (entry->dado = cons->dado) {
-                if (entry == entradas*)
-                Elem *buffer = entry;
+    double soma_clocks = 0;
+    double tempos[3];
+    int* entradas_original = entradas;
+    for (int k = 0; k < 3; k++) {
 
+        entradas = entradas_original;
+        inicia_tempo();
+        
+        int buffer;
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if(consultas[i] == entradas[j]) {
+                    encontrados++;
+                    if (j != 0) {
+                        buffer = entradas[j];
+                        entradas[j] = entradas[0];
+                        entradas[0] = buffer;
+                    }
+                }
             }
         }
+
+        tempos[k] = finaliza_tempo();
+        soma_clocks += tempos[k];
+        printf("Execucao numero: %d -> Itens encontrados:  %d -> Tempo de busca:  %fs\n", k+1, encontrados, tempos[k]);
+        encontrados = 0;
     }
+    double desvio = desvio_padrao(tempos, 3);
 
-    double tempo_busca = finaliza_tempo();
+    printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/3);
+    printf("--> Desvio padrao dos tempos :\t%f\n", desvio); // MUDAR AQUI
 
-    printf("Tempo de busca    :\t%fs\n", tempo_busca);
-    printf("Itens encontrados :\t%d\n", encontrados);
-
-    libera_lista(entradas);
-    libera_lista(consultas);
     return 0;
 }
