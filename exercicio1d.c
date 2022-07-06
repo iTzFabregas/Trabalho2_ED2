@@ -1,3 +1,9 @@
+/* Parte I c) busca sequencial transposicao
+Fabrıcio Sampaio - 12547423
+Pedro Arthur Francoso - 12547301
+Pedro Lucas Castro de Andrade - 11212289
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -11,39 +17,41 @@ unsigned char typedef bool;
 #define TRUE  1
 #define FALSE 0
 
+// Numero de repeticoes necessarias
+#define num_rep 3
 
+//recursividade para ordenacao merge
+void merge(int* array, int esquerda, int meio, int direita) {
 
-void merging(int* array, int left, int mid, int right) {
-
-    int l = left;
-    int u = mid+1;
-    int* buffer = malloc(sizeof(int) * (right+1));
+    int menor = esquerda;
+    int maior = meio + 1;
+    int* buffer = malloc(sizeof(int) * (direita + 1));
     int cnt = 0;
 
-    while (l <= mid || u <= right) {
-        if (l > mid) {
+    while (menor <= meio || maior <= direita) {
+        if (menor > meio) {
             buffer[cnt] = array[u];
-            u++;
+            maior++;
             cnt++;
-        } else if (u > right) {
-            buffer[cnt] = array[l];
-            l++;
+        } else if (maior > direita) {
+            buffer[cnt] = array[menor];
+            menor++;
             cnt++;
         } else {
-            if (array[u] <= array[l]) {
-                buffer[cnt] = array[u];
-                u++;
+            if (array[maior] <= array[menor]) {
+                buffer[cnt] = array[maior];
+                maior++;
                 cnt++;
             } else {
-                buffer[cnt] = array[l];
-                l++;
+                buffer[cnt] = array[menor];
+                menor++;
                 cnt++;
             }
         }
     }
 
     cnt = 0;
-    for (int k = left; k <= right; k++) {
+    for (int k = esquerda; k <= direita; k++) {
         array[k] = buffer[cnt];
         cnt++;
     }
@@ -51,21 +59,20 @@ void merging(int* array, int left, int mid, int right) {
     free(buffer);
 }
 
+//chamada geral do merge sort
+void merge_sort(int* array, int esquerda, int direita) {
 
-void merge_sort(int* array, int left, int right) {
-
-    if (left < right) {
-        int mid = (left+right-1)/2;
-        merge_sort(array, left, mid);
-        merge_sort(array, mid+1, right);
-        merging(array, left, mid, right);
+    if (esquerda < direita) {
+        int meio = (esquerda + direita - 1)/2;
+        merge_sort(array, esquerda, meio);
+        merge_sort(array, meio + 1, direita);
+        merge(array, esquerda, meio, direita);
     } else {
         return;
     }
 }
 
-
-
+//funcao que le inteiros de um arquivo
 int* ler_inteiros(const char * arquivo, const int n)
 {
     FILE* f = fopen(arquivo, "r");
@@ -80,31 +87,33 @@ int* ler_inteiros(const char * arquivo, const int n)
     return inteiros;
 }
 
+//inicializar a contagem de tempos
 void inicia_tempo()
 {
     srand(time(NULL));
     _ini = clock();
 }
 
+//finalizar a contagem de tempo e retornar a diferenca do tempo inicial e final
 double finaliza_tempo()
 {
     _fim = clock();
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
-double desvio_padrao(double* tempos, int k)
+double desvio_padrao(double* tempos)
 {
     double sum = 0;
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < num_rep; i++) {
         sum += tempos[i];
     }
-    double media = sum / 3;
+    double media = sum / num_rep;
 
     double dp = 0;
     for (int i = 0; i < k; i++) {
         dp += (pow((tempos[i] - media),2));
     }
-    dp = dp / 3;
+    dp = dp / num_rep;
     dp = sqrt(dp);
 
     return dp;
@@ -133,9 +142,10 @@ int main(int argc, char const *argv[])
 
     // realizar consultas na tabela de indices 
     double soma_clocks = 0;
-    double tempos[3];
+    double tempos[num_rep];
     int* entradas_original = entradas;
-    for (int k = 0; k < 3; k++) {
+    double desvio;
+    for (int k = 0; k < num_rep; k++) {
 
         entradas = entradas_original;
         inicia_tempo();
@@ -168,9 +178,9 @@ int main(int argc, char const *argv[])
         encontrados = 0;
     }
 
-    double desvio = desvio_padrao(tempos, 3);
+    desvio = desvio_padrao(tempos);
 
-    printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/3);
+    printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/num_rep);
     printf("--> Desvio padrao dos tempos :\t%f\n", desvio);
 
     return 0;
