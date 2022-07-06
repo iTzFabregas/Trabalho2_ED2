@@ -72,7 +72,7 @@ int busca_lista(no **lista, string ent){
 void destroi_lista(no **lista){
     no *aux = *lista;
     no *next;
-    while (*aux != NULL){
+    while (aux != NULL){
         next = aux->prox;
         free(aux);
         aux = next;
@@ -183,32 +183,37 @@ int main(int argc, char const *argv[])
     
 
     // cria tabela hash com hash por divisão
+    hash tabela;
+    cria_hash(&tabela, B);
 
-    
     // inserção dos dados na tabela hash com hash por divisão
     inicia_tempo();
     for (int i = 0; i < N; i++) {
-        // inserir insercoes[i] na tabela hash
+        string leitura = insercoes[i];
+        colisoes_h_div += inserir(&tabela, leitura, &h_div);
     }
     double tempo_insercao_h_div = finaliza_tempo();
 
     // busca dos dados na tabela hash com hash por divisão
     inicia_tempo();
-    for (int i = 0; i < M; i++) {
-        // buscar consultas[i] na tabela hash
+    for (int i = 0; i < M; i++) {  
+        string consulta = consultas[i];
+        if(busca_hash(&tabela, consulta, &h_div) != -1) encontrados_h_div++;
     }
     double tempo_busca_h_div = finaliza_tempo();
 
     // destroi tabela hash com hash por divisão
-
+    destroi_hash(&tabela, B);
 
 
 
     // cria tabela hash com hash por multiplicação
-
+    cria_hash(&tabela, B);
     // inserção dos dados na tabela hash com hash por multiplicação
     inicia_tempo();
     for (int i = 0; i < N; i++) {
+        string leitura = insercoes[i];
+        colisoes_h_div += inserir(&tabela, leitura, &h_mul);
         // inserir insercoes[i] na tabela hash
     }
     double tempo_insercao_h_mul = finaliza_tempo();
@@ -216,12 +221,13 @@ int main(int argc, char const *argv[])
     // busca dos dados na tabela hash com hash por multiplicação
     inicia_tempo();
     for (int i = 0; i < M; i++) {
-        // buscar consultas[i] na tabela hash
+        string consulta = consultas[i];
+        if(busca_hash(&tabela, consulta, &h_div) != -1) encontrados_h_mul++;
     }
     double tempo_busca_h_mul = finaliza_tempo();
 
     // destroi tabela hash com hash por multiplicação
-
+    destroi_hash(&tabela, B);
 
 
     printf("Hash por Divisão\n");
