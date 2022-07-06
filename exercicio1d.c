@@ -161,11 +161,11 @@ int main(int argc, char const *argv[])
             int cnt = tabela_index[j];
             while (1) {
                 // printf("%d - %d - %d\n", tabela_index[j], entradas[cnt], consultas[i]);
-                if (entradas[cnt] > consultas[i] || cnt >= N) {
+                if (entradas[cnt] > consultas[i] || cnt >= N) { // NÃO ACHPU
                     // printf("%d - %d - %d\n", tabela_index[j], entradas[cnt-1], consultas[i]);
                     break;
                 }
-                if (entradas[cnt] == consultas[i]) {
+                if (entradas[cnt] == consultas[i]) { // ACHOU
                     encontrados++;
                     break;
                 }
