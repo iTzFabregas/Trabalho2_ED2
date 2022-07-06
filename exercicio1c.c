@@ -1,3 +1,9 @@
+/* Parte I c) busca sequencial transposicao
+Fabrıcio Sampaio - 12547423
+Pedro Arthur Francoso - 12547301
+Pedro Lucas Castro de Andrade - 11212289
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,36 +15,10 @@ clock_t _ini, _fim;
 // Definição do tipo booleano
 unsigned char typedef bool;
 
-// Definição da lista
-typedef struct elemento{
-    int dado;
-    struct elemento *prox;
-}Elem;
+// Numero de repeticoes necessarias
+#define num_rep 3
 
-typedef struct elemento* Lista;
-
-Lista* cria_lista()
-{
-    Lista* li = (Lista*) malloc(sizeof(Lista));
-    if(li != NULL)
-        *li = NULL;
-    return li;
-}
-
-void libera_lista(Lista* li)
-{
-    if(li != NULL){
-        Elem* no;
-        while((*li) != NULL){
-            no = *li;
-            *li = (*li)->prox;
-            free(no);
-        }
-        free(li);
-    }
-}
-
-
+//funcao que le inteiros de um arquivo
 int* ler_inteiros(const char * arquivo, const int n)
 {
     FILE* f = fopen(arquivo, "r");
@@ -53,31 +33,33 @@ int* ler_inteiros(const char * arquivo, const int n)
     return inteiros;
 }
 
+//inicializar a contagem de tempos
 void inicia_tempo()
 {
     srand(time(NULL));
     _ini = clock();
 }
 
+//finalizar a contagem de tempo e retornar a diferenca do tempo inicial e final
 double finaliza_tempo()
 {
     _fim = clock();
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
-double desvio_padrao(double* tempos, int k)
+double desvio_padrao(double* tempos)
 {
     double sum = 0;
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < num_rep; i++) {
         sum += tempos[i];
     }
-    double media = sum / 3;
+    double media = sum / num_rep;
 
     double dp = 0;
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < num_rep; i++) {
         dp += (pow((tempos[i] - media),2));
     }
-    dp = dp / 3;
+    dp = dp / num_rep;
     dp = sqrt(dp);
 
     return dp;
@@ -94,9 +76,9 @@ int main(int argc, char const *argv[])
 
     // realiza busca sequencia com realocação
     double soma_clocks = 0;
-    double tempos[3];
+    double tempos[num_rep];
     int* entradas_original = entradas;
-    for (int k = 0; k < 3; k++) {
+    for (int k = 0; k < num_rep; k++) {
 
         entradas = entradas_original;
         inicia_tempo();
@@ -121,9 +103,9 @@ int main(int argc, char const *argv[])
         encontrados = 0;
     }
 
-    double desvio = desvio_padrao(tempos, 3);
+    double desvio = desvio_padrao(tempos);
 
-    printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/3);
+    printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/num_rep);
     printf("--> Desvio padrao dos tempos :\t%f\n", desvio);
 
     return 0;
