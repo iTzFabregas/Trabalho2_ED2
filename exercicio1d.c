@@ -143,31 +143,33 @@ int main(int argc, char const *argv[])
     // realizar consultas na tabela de indices 
     double soma_clocks = 0;
     double tempos[num_rep];
-    int* entradas_original = entradas;
     double desvio;
     for (int k = 0; k < num_rep; k++) {
 
-        entradas = entradas_original;
         inicia_tempo();
         
         for (int i = 0; i < N; i++) {
             int j = 0;
-            while (entradas[tabela_index[j]] <= consultas[i]) {
+            while (entradas[tabela_index[j]] < consultas[i]) {
                 j++;
                 if (j >= T) {
                     break;
                 }
             }
-
+            j -= 1;
             
             int cnt = tabela_index[j];
-            while (entradas[cnt] >= consultas[i]) {
-
+            while (1) {
+                // printf("%d - %d - %d\n", tabela_index[j], entradas[cnt], consultas[i]);
+                if (entradas[cnt] > consultas[i] || cnt >= N) {
+                    // printf("%d - %d - %d\n", tabela_index[j], entradas[cnt-1], consultas[i]);
+                    break;
+                }
                 if (entradas[cnt] == consultas[i]) {
                     encontrados++;
                     break;
                 }
-                cnt--;
+                cnt++;
             }
             continue;
         }
