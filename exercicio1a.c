@@ -79,6 +79,7 @@ int main(int argc, char const *argv[])
     // realiza busca sequencial
     double soma_clocks = 0;
     double tempos[num_rep];
+    double desvio;
     for (int k = 0; k < num_rep; k++) {
 
         inicia_tempo();
@@ -97,7 +98,7 @@ int main(int argc, char const *argv[])
         encontrados = 0;
     }
 
-    double desvio = desvio_padrao(tempos);
+    desvio = desvio_padrao(tempos);
 
     printf("\n\n--> Tempo medio de busca     :\t%fs\n", soma_clocks/num_rep);
     printf("--> Desvio padrao dos tempos :\t%f\n", desvio);
