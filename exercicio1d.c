@@ -1,4 +1,4 @@
-/* Parte I c) busca sequencial transposicao
+/* Parte I d) busca sequencial com índice primário
 Fabrıcio Sampaio - 12547423
 Pedro Arthur Francoso - 12547301
 Pedro Lucas Castro de Andrade - 11212289
