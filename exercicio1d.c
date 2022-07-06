@@ -30,7 +30,7 @@ void merge(int* array, int esquerda, int meio, int direita) {
 
     while (menor <= meio || maior <= direita) {
         if (menor > meio) {
-            buffer[cnt] = array[u];
+            buffer[cnt] = array[maior];
             maior++;
             cnt++;
         } else if (maior > direita) {
@@ -110,7 +110,7 @@ double desvio_padrao(double* tempos)
     double media = sum / num_rep;
 
     double dp = 0;
-    for (int i = 0; i < k; i++) {
+    for (int i = 0; i < num_rep; i++) {
         dp += (pow((tempos[i] - media),2));
     }
     dp = dp / num_rep;
