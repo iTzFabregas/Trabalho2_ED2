@@ -18,6 +18,12 @@ typedef char * string;
 
 #define MAX_STRING_LEN 20
 
+// Definindo  structs necessarias para o hash
+typedef char elem;
+
+typedef struct {
+    elem dados[20];
+}hash;
 
 unsigned converter(string s) {
    unsigned h = 0;
@@ -66,6 +72,58 @@ unsigned h_mul(unsigned x, unsigned i, unsigned B)
     return  ((int) ((fmod(x * A, 1) * B) + i)) % B;
 }
 
+
+hash* criar_tabela(int B) {
+    hash* tabela = malloc(sizeof(hash) * B);
+    if (tabela == NULL) {
+        printf("Erro alocacao tabela\n");
+        exit(-1);
+    }
+    for (int i = 0; i < B; i++) {
+        strcpy(tabela[i].dados, "VAZIO\0");
+    }
+    return tabela;
+}
+
+void liberar_tabela(hash* tabela, int B) {
+    free(tabela);
+}
+
+int inserir_tabela(hash* tabela_hash, string inserir, int B) {
+    int colisoes = 0;
+    unsigned pos;
+    unsigned string_num = converter(inserir);
+    for (int i = 0; i < B;  i++) {
+        pos = (h_mul(string_num, i, B) + i * h_div(string_num, i, B)) % B;
+
+        if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
+            strcpy(tabela_hash[pos].dados, inserir);
+            return colisoes; // inserida
+        }
+        if (!(strcmp(tabela_hash[pos].dados, inserir))) {
+            //colisoes = 1; // ISSO SERIA CONSIDERADO UMA COLISÃO ???
+            return colisoes; // ja foi inserida
+        }
+        colisoes = 1;
+    }
+    return colisoes; // lista cheia
+}
+
+int busca_tabela(hash* tabela_hash, string consultar, int B) {
+    unsigned pos;
+    unsigned string_num = converter(consultar);
+    for (int i = 0; i < B;  i++) {
+       pos = (h_mul(string_num, i, B) + i * h_div(string_num, i, B)) % B;
+        if (!(strcmp(tabela_hash[pos].dados, consultar))) {       
+            return 1; // encontrado
+        }
+        if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
+            return 0; // nao foi inserido
+        }
+    }
+    return 0; // lsita cheia00
+}
+
 int main(int argc, char const *argv[])
 {
     const int N = 50000;
@@ -80,11 +138,13 @@ int main(int argc, char const *argv[])
 
 
     // cria tabela hash com hash por hash duplo
+    hash* tabela_hash = criar_tabela(B);
 
     // inserção dos dados na tabela hash
     inicia_tempo();
     for (int i = 0; i < N; i++) {
         // inserir insercoes[i] na tabela hash
+        colisoes += inserir_tabela(tabela_hash, insercoes[i], B);
     }
     double tempo_insercao = finaliza_tempo();
 
@@ -92,12 +152,15 @@ int main(int argc, char const *argv[])
     inicia_tempo();
     for (int i = 0; i < M; i++) {
         // buscar consultas[i] na tabela hash
+        encontrados += busca_tabela(tabela_hash, consultas[i], B);
     }
     double tempo_busca = finaliza_tempo();
 
+    // limpa a tabela hash
+    liberar_tabela(tabela_hash, B);
 
-    printf("Colisões na inserção: %d\n", colisoes);
-    printf("Tempo de inserção   : %fs\n", tempo_insercao);
+    printf("Colisoes na insercao: %d\n", colisoes);
+    printf("Tempo de insercao   : %fs\n", tempo_insercao);
     printf("Tempo de busca      : %fs\n", tempo_busca);
     printf("Itens encontrados   : %d\n", encontrados);
 
