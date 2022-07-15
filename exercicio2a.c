@@ -1,3 +1,9 @@
+/* Parte I a) busca sequencial simples
+Fabrıcio Sampaio - 12547423
+Pedro Arthur Francoso - 12547301
+Pedro Lucas Castro de Andrade - 11212289
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
