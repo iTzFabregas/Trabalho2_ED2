@@ -24,7 +24,6 @@ typedef struct {
     elem dados[20];
 }hash;
 
-
 unsigned converter(string s) {
    unsigned h = 0;
    for (int i = 0; s[i] != '\0'; i++) 
@@ -32,8 +31,7 @@ unsigned converter(string s) {
    return h;
 }
 
-string* ler_strings(const char * arquivo, const int n)
-{
+string* ler_strings(const char * arquivo, const int n) {
     FILE* f = fopen(arquivo, "r");
     
     string* strings = (string *) malloc(sizeof(string) * n);
@@ -48,37 +46,33 @@ string* ler_strings(const char * arquivo, const int n)
     return strings;
 }
 
-void inicia_tempo()
-{
+void inicia_tempo() {
     srand(time(NULL));
     _ini = clock();
 }
 
-double finaliza_tempo()
-{
+double finaliza_tempo() {
     _fim = clock();
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
-unsigned h_div(unsigned x, unsigned i, unsigned B)
-{
+unsigned h_div(unsigned x, unsigned i, unsigned B) {
     return ((x % B) + i) % B;
 }
 
-unsigned h_mul(unsigned x, unsigned i, unsigned B)
-{
+unsigned h_mul(unsigned x, unsigned i, unsigned B) {
     const double A = 0.6180;
     return  ((int) ((fmod(x * A, 1) * B) + i)) % B;
 }
 
 hash* criar_tabela(int B) {
     hash* tabela = malloc(sizeof(hash) * B);
-    if (tabela == NULL) {
+    if (tabela == NULL) { //problema na alocacao de memoria
         printf("Erro alocacao tabela\n");
         exit(-1);
     }
     for (int i = 0; i < B; i++) {
-        strcpy(tabela[i].dados, "VAZIO\0");
+        strcpy(tabela[i].dados, "VAZIO\0"); // string para indicar que o bucket esta livre
     }
     return tabela;
 }
@@ -88,23 +82,20 @@ void liberar_tabela(hash* tabela, int B) {
 }
 
 int inserir_tabela_div(hash* tabela_hash, string inserir, int B) {
-    int colisoes = 0;
     unsigned pos;
     unsigned string_num = converter(inserir);
     for (int i = 0; i < B;  i++) {
         pos = h_div(string_num, i, B);
 
         if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
-            strcpy(tabela_hash[pos].dados, inserir);
-            return colisoes; // inserida
+            strcpy(tabela_hash[pos].dados, inserir); // elemento inserido na tabela
+            return (i == 0) ? 0 : 1; // se preciou procurar mais de uma vez, houve colisao
         }
         if (!(strcmp(tabela_hash[pos].dados, inserir))) {
-            //colisoes = 1; // ISSO SERIA CONSIDERADO UMA COLISÃO ???
-            return colisoes; // ja foi inserida
+            return 0; // elemento repetido
         }
-        colisoes = 1;
     }
-    return colisoes; // lista cheia
+    return 1; // lista cheia
 }
 
 int busca_tabela_div(hash* tabela_hash, string consultar, int B) {
@@ -113,33 +104,30 @@ int busca_tabela_div(hash* tabela_hash, string consultar, int B) {
     for (int i = 0; i < B;  i++) {
         pos = h_div(string_num, i, B);
         if (!(strcmp(tabela_hash[pos].dados, consultar))) {       
-            return 1; // encontrado
+            return 1; // elemento encontrado
         }
         if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
-            return 0; // nao foi inserido
+            return 0; // elemento nao esta na tabela
         }
     }
-    return 0; // lsita cheia00
+    return 0; // elemento nao esta na tabela
 }
 
 int inserir_tabela_mul(hash* tabela_hash, string inserir, int B) {
-    int colisoes = 0;
     unsigned pos;
     unsigned string_num = converter(inserir);
     for (int i = 0; i < B;  i++) {
         pos = h_mul(string_num, i, B);
 
         if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
-            strcpy(tabela_hash[pos].dados, inserir);
-            return colisoes; // inserida
+            strcpy(tabela_hash[pos].dados, inserir); // elemento inserido na tabela
+            return (i == 0) ? 0 : 1; // se preciou procurar mais de uma vez, houve colisao
         }
         if (!(strcmp(tabela_hash[pos].dados, inserir))) {
-            //colisoes = 1; // ISSO SERIA CONSIDERADO UMA COLISÃO ???
-            return colisoes; // ja foi inserida
+            return 0; // elemento repetido
         }
-        colisoes = 1;
     }
-    return colisoes; // lista cheia
+    return 1; // lista cheia
 }
 
 int busca_tabela_mul(hash* tabela_hash, string consultar, int B) {
@@ -148,18 +136,17 @@ int busca_tabela_mul(hash* tabela_hash, string consultar, int B) {
     for (int i = 0; i < B;  i++) {
         pos = h_mul(string_num, i, B);
         if (!(strcmp(tabela_hash[pos].dados, consultar))) {       
-            return 1; // encontrado
+            return 1; // elemento encontrado
         }
         if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
-            return 0; // nao foi inserido
+            return 0; // elemento nao esta na tabela
         }
     }
-    return 0; // lsita cheia00
+    return 0; // elemento nao esta na tabela
 }
 
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     unsigned N = 50000;
     unsigned M = 70000;
     unsigned B = 150001;
@@ -223,8 +210,7 @@ int main(int argc, char const *argv[])
     double tempo_busca_h_mul = finaliza_tempo();
 
     // limpa a tabela hash com hash por multiplicação
-
-
+    liberar_tabela(tabela_hash_mul, B);
 
     printf("Hash por Divisao\n");
     printf("Colisoes na insercao : %d\n", colisoes_h_div);
@@ -237,5 +223,6 @@ int main(int argc, char const *argv[])
     printf("Tempo de insercao   : %fs\n", tempo_insercao_h_mul);
     printf("Tempo de busca      : %fs\n", tempo_busca_h_mul);
     printf("Itens encontrados   : %d\n", encontrados_h_mul);
+
     return 0;
 }
