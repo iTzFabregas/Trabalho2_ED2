@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <assert.h>
 #include <string.h>
 #include <math.h>
 
@@ -21,62 +20,55 @@ typedef char * string;
 /* -------- Funcoes do TAD -------- */
 
 typedef struct no {
-    string num;
+    string info;
     struct no* prox;
 } no;
-
-int cria_lista(no **lista){
-    *lista = malloc(sizeof(no));
-    if(lista != NULL){
-        (*lista)->prox = NULL;
-        (*lista)->num = "*";
-        return 0;
-    } else {
-        return 1;
-    }
-}
 
 int insere_final(no **lista, string ent){
     no *aux = *lista;
     no *new = malloc(sizeof(no));
-    new->num = ent;
+    new->info = ent;
     new->prox = NULL;
 
-    if (aux == NULL){
-        (*aux) = new;
+    if (aux == NULL){ //bucket estava vazio
+        (*lista) = new;
         return 0;
     }
 
-    while (aux->prox != NULL){
-        if(strcomp(aux->num, ent) == 0) return 0;
+    while (aux->prox != NULL){ //percorre a lista até achar um no vazio
+        if(strcmp(aux->info, ent) == 0){
+            return 0; //elemento repetido
+        }
         aux = aux->prox;
     }
-
-    if (strcomp(aux->num, ent) == 0) return 0;
+    
+    if (strcmp(aux->info, ent) == 0){
+        return 0; //elemento repetido
+    }
     aux->prox = new;
 
-    return 1;
+    return 1; //insercao com ocorrencia de colisao
 }
 
 int busca_lista(no **lista, string ent){
     no *aux = *lista;
-  while(aux != NULL){
-    if(strcmp(aux->num, ent) == 0)
-      //Encontrado
-      return 0;
-    aux = aux->prox;
-  }
-  return -1;
+    while(aux != NULL){ //percorre a lista
+        if(strcmp(aux->info, ent) == 0){
+            return 0; //elemento encontrado
+        }
+        aux = aux->prox;
+    }
+  return -1; //elemento não encontrado
 }
 
 void destroi_lista(no **lista){
-    no *aux = *lista;
-    no *next;
-    while (aux != NULL){
-        next = aux->prox;
-        free(aux);
-        aux = next;
+    no *aux;
+    while ((*lista) != NULL){ //percorre a lista
+        aux = *lista;
+        *lista = (*lista)->prox;
+        free(aux); //libera a memoria alocada para o no
     }
+    free(*lista); 
 }
 
 /* ------- Fim das funções do TAD --------*/
@@ -85,15 +77,14 @@ typedef struct {
     no **lista;
 } hash;
 
-unsigned converter(string s) {
+unsigned converter(string s){
    unsigned h = 0;
    for (int i = 0; s[i] != '\0'; i++) 
       h = h * 256 + s[i];
    return h;
 }
 
-string* ler_strings(const char * arquivo, const int n)
-{
+string* ler_strings(const char * arquivo, const int n){
     FILE* f = fopen(arquivo, "r");
     
     string* strings = (string *) malloc(sizeof(string) * n);
@@ -108,66 +99,54 @@ string* ler_strings(const char * arquivo, const int n)
     return strings;
 }
 
-void inicia_tempo()
-{
+void inicia_tempo(){
     srand(time(NULL));
     _ini = clock();
 }
 
-double finaliza_tempo()
-{
+double finaliza_tempo(){
     _fim = clock();
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
-unsigned h_div(unsigned x, unsigned B)
-{
+unsigned h_div(unsigned x, unsigned B){
     return x % B;
 }
 
-unsigned h_mul(unsigned x, unsigned B)
-{
+unsigned h_mul(unsigned x, unsigned B){
     const double A = 0.6180;
     return fmod(x * A, 1) * B;
 }
 
-void cria_hash(int tamanho, hash *ha){
-    ha->lista = malloc(sizeof(no*)*tamanho);
-    for (int i = 0; i < tamanho; i++){
-        ha->lista[i] = NULL;
+void cria_hash(hash *ha, int B){
+    ha->lista = malloc(sizeof(no*) * B); //aloca memoria necessaria para o hash
+    for (int i = 0; i < B; i++){
+        ha->lista[i] = NULL; //cada bucket comeca com uma lista vazia
     }
 }    
 
-void destroi_hash(hash *ha, const int tamanho){
-    for (int i = 0; i < tamanho; i++) destroi_lista(&ha->lista[i]);
+void destroi_hash(hash *ha, int B){
+    for (int i = 0; i < B; i++){ 
+        destroi_lista(&(ha->lista[i]));
+    }
+    free(ha->lista);
 }
 
-int inserir (hash *ha, string ent, unsigned (*f)(unsigned int)){
+int inserir (hash *ha, string ent, int B, unsigned (*f)(unsigned, unsigned)){
     unsigned int pos;
     unsigned int key = converter(ent);
-    pos = (*f)(key);
+    pos = (*f)(key, B);
     return insere_final(&(ha->lista[pos]), ent);
 }
 
-int busca_hash(hash *ha, string busca, unsigned (*f)(unsigned int)){
+int busca_hash(hash *ha, string busca, int B, unsigned (*f)(unsigned, unsigned)){
     unsigned int pos;
     unsigned int key = converter(busca);
-    pos = (*f)(key);
-    return(busca_lista(&(ha->lista[pos]), busca));
+    pos = (*f)(key, B);
+    return(busca_lista(&(ha->lista[pos]), busca) != -1) ? pos : -1;
 }
 
-void printar_lista(no **node){
-    no *aux= *node;
-    printf("Lista: ");
-    while(aux != NULL){
-        printf("%s - ", aux->num);
-        aux = aux->prox;
-    }
-    printf("\n");
-}
-
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]){
     const int N = 50000;
     const int M = 70000;
     const int B = 150001;
@@ -190,7 +169,7 @@ int main(int argc, char const *argv[])
     inicia_tempo();
     for (int i = 0; i < N; i++) {
         string leitura = insercoes[i];
-        colisoes_h_div += inserir(&tabela, leitura, &h_div);
+        colisoes_h_div += inserir(&tabela, leitura, B, &h_div);
     }
     double tempo_insercao_h_div = finaliza_tempo();
 
@@ -198,14 +177,14 @@ int main(int argc, char const *argv[])
     inicia_tempo();
     for (int i = 0; i < M; i++) {  
         string consulta = consultas[i];
-        if(busca_hash(&tabela, consulta, &h_div) != -1) encontrados_h_div++;
+        if(busca_hash(&tabela, consulta, B, &h_div) != -1){
+            encontrados_h_div++;
+        }
     }
     double tempo_busca_h_div = finaliza_tempo();
 
     // destroi tabela hash com hash por divisão
     destroi_hash(&tabela, B);
-
-
 
     // cria tabela hash com hash por multiplicação
     cria_hash(&tabela, B);
@@ -213,8 +192,8 @@ int main(int argc, char const *argv[])
     inicia_tempo();
     for (int i = 0; i < N; i++) {
         string leitura = insercoes[i];
-        colisoes_h_div += inserir(&tabela, leitura, &h_mul);
         // inserir insercoes[i] na tabela hash
+        colisoes_h_mul += inserir(&tabela, leitura, B, &h_mul);
     }
     double tempo_insercao_h_mul = finaliza_tempo();
 
@@ -222,13 +201,14 @@ int main(int argc, char const *argv[])
     inicia_tempo();
     for (int i = 0; i < M; i++) {
         string consulta = consultas[i];
-        if(busca_hash(&tabela, consulta, &h_div) != -1) encontrados_h_mul++;
+        if(busca_hash(&tabela, consulta, B, &h_mul) != -1){
+            encontrados_h_mul++;
+        }
     }
     double tempo_busca_h_mul = finaliza_tempo();
 
     // destroi tabela hash com hash por multiplicação
     destroi_hash(&tabela, B);
-
 
     printf("Hash por Divisão\n");
     printf("Colisões na inserção: %d\n", colisoes_h_div);
