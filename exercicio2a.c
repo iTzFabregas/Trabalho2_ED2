@@ -89,7 +89,7 @@ int inserir_tabela_div(hash* tabela_hash, string inserir, int B) {
 
         if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
             strcpy(tabela_hash[pos].dados, inserir); // elemento inserido na tabela
-            return (i == 0) ? 0 : 1; // se preciou procurar mais de uma vez, houve colisao
+            return (i == 0) ? 0 : 1; // se precisou procurar mais de uma vez, houve colisao
         }
         if (!(strcmp(tabela_hash[pos].dados, inserir))) {
             return 0; // elemento repetido
