@@ -1,7 +1,12 @@
+/* Parte I a) busca sequencial simples
+Fabrıcio Sampaio - 12547423
+Pedro Arthur Francoso - 12547301
+Pedro Lucas Castro de Andrade - 11212289
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <assert.h>
 #include <string.h>
 #include <math.h>
 
@@ -32,8 +37,7 @@ unsigned converter(string s) {
    return h;
 }
 
-string* ler_strings(const char * arquivo, const int n)
-{
+string* ler_strings(const char * arquivo, const int n) {
     FILE* f = fopen(arquivo, "r");
     
     string* strings = (string *) malloc(sizeof(string) * n);
@@ -48,39 +52,34 @@ string* ler_strings(const char * arquivo, const int n)
     return strings;
 }
 
-void inicia_tempo()
-{
+void inicia_tempo() {
     srand(time(NULL));
     _ini = clock();
 }
 
-double finaliza_tempo()
-{
+double finaliza_tempo() {
     _fim = clock();
     return ((double) (_fim - _ini)) / CLOCKS_PER_SEC;
 }
 
 
-unsigned h_div(unsigned x, unsigned i, unsigned B)
-{
+unsigned h_div(unsigned x, unsigned i, unsigned B) {
     return ((x % B) + i) % B;
 }
 
-unsigned h_mul(unsigned x, unsigned i, unsigned B)
-{
+unsigned h_mul(unsigned x, unsigned i, unsigned B) {
     const double A = 0.6180;
     return  ((int) ((fmod(x * A, 1) * B) + i)) % B;
 }
 
-
 hash* criar_tabela(int B) {
     hash* tabela = malloc(sizeof(hash) * B);
-    if (tabela == NULL) {
+    if (tabela == NULL) { //problema na alocacao de memoria
         printf("Erro alocacao tabela\n");
         exit(-1);
     }
     for (int i = 0; i < B; i++) {
-        strcpy(tabela[i].dados, "VAZIO\0");
+        strcpy(tabela[i].dados, "VAZIO\0"); // indica que o bucket estah disponivel
     }
     return tabela;
 }
@@ -90,7 +89,6 @@ void liberar_tabela(hash* tabela, int B) {
 }
 
 int inserir_tabela(hash* tabela_hash, string inserir, int B) {
-    int colisoes = 0;
     unsigned pos;
     unsigned string_num = converter(inserir);
     for (int i = 0; i < B;  i++) {
@@ -98,15 +96,13 @@ int inserir_tabela(hash* tabela_hash, string inserir, int B) {
 
         if (!(strcmp(tabela_hash[pos].dados, "VAZIO"))) {
             strcpy(tabela_hash[pos].dados, inserir);
-            return colisoes; // inserida
+            return (i == 0) ? 0 : 1; // se precisou procurar mais de uma vez, houve colisao
         }
         if (!(strcmp(tabela_hash[pos].dados, inserir))) {
-            //colisoes = 1; // ISSO SERIA CONSIDERADO UMA COLISÃO ???
-            return colisoes; // ja foi inserida
+            return 0; // elemento repetido
         }
-        colisoes = 1;
     }
-    return colisoes; // lista cheia
+    return 1; // lista cheia
 }
 
 int busca_tabela(hash* tabela_hash, string consultar, int B) {
@@ -121,11 +117,10 @@ int busca_tabela(hash* tabela_hash, string consultar, int B) {
             return 0; // nao foi inserido
         }
     }
-    return 0; // lsita cheia00
+    return 0; // nao foi encontrado
 }
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     const int N = 50000;
     const int M = 70000;
     const int B = 150001;
@@ -135,7 +130,6 @@ int main(int argc, char const *argv[])
 
     string* insercoes = ler_strings("strings_entrada.txt", N);
     string* consultas = ler_strings("strings_busca.txt", M);
-
 
     // cria tabela hash com hash por hash duplo
     hash* tabela_hash = criar_tabela(B);
