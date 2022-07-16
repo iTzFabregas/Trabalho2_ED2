@@ -1,4 +1,4 @@
-/* Parte I a) busca sequencial simples
+/* Parte II c) hash aberto com lista encadeada
 Fabrıcio Sampaio - 12547423
 Pedro Arthur Francoso - 12547301
 Pedro Lucas Castro de Andrade - 11212289
