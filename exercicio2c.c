@@ -23,6 +23,9 @@ typedef char * string;
 
 #define MAX_STRING_LEN 20
 
+// Numero de repeticoes necessarias
+#define num_rep 3
+
 /* -------- Funcoes do TAD -------- */
 
 typedef struct no {
@@ -124,6 +127,24 @@ unsigned h_mul(unsigned x, unsigned B){
     return fmod(x * A, 1) * B;
 }
 
+double desvio_padrao(double* tempos)
+{
+    double sum = 0;
+    for (int i = 0; i < num_rep; i++) {
+        sum += tempos[i];
+    }
+    double media = sum / num_rep;
+
+    double dp = 0;
+    for (int i = 0; i < num_rep; i++) {
+        dp += (pow((tempos[i] - media),2));
+    }
+    dp = dp / num_rep;
+    dp = sqrt(dp);
+
+    return dp;
+}
+
 void cria_hash(hash *ha, int B){
     ha->lista = malloc(sizeof(no*) * B); //aloca memoria necessaria para o hash
     for (int i = 0; i < B; i++){
@@ -167,66 +188,99 @@ int main(int argc, char const *argv[]){
     string* consultas = ler_strings("strings_busca.txt", M);
     
 
-    // cria tabela hash com hash por divisão
-    hash tabela;
-    cria_hash(&tabela, B);
+    double soma_clocks_insercao_div = 0;
+    double soma_clocks_busca_div = 0;
+    double tempos_insercao_div[num_rep];
+    double tempos_busca_div[num_rep];
+    
+    for (int k = 0; k < num_rep; k++) {
 
-    // inserção dos dados na tabela hash com hash por divisão
-    inicia_tempo();
-    for (int i = 0; i < N; i++) {
-        string leitura = insercoes[i];
-        colisoes_h_div += inserir(&tabela, leitura, B, &h_div);
-    }
-    double tempo_insercao_h_div = finaliza_tempo();
+        // cria tabela hash com hash por divisão
+        hash tabela;
+        cria_hash(&tabela, B);
 
-    // busca dos dados na tabela hash com hash por divisão
-    inicia_tempo();
-    for (int i = 0; i < M; i++) {  
-        string consulta = consultas[i];
-        if(busca_hash(&tabela, consulta, B, &h_div) != -1){
-            encontrados_h_div++;
+        // inserção dos dados na tabela hash com hash por divisão
+        inicia_tempo();
+        for (int i = 0; i < N; i++) {
+            string leitura = insercoes[i];
+            colisoes_h_div += inserir(&tabela, leitura, B, &h_div);
         }
-    }
-    double tempo_busca_h_div = finaliza_tempo();
+        tempos_insercao_div[k] = finaliza_tempo();
+        soma_clocks_insercao_div += tempos_insercao_div[k];
+        printf("Insercao numero : %d -> Tempo de busca:  %fs\n", k+1, tempos_insercao_div[k]);
 
-    // destroi tabela hash com hash por divisão
-    destroi_hash(&tabela, B);
-
-    // cria tabela hash com hash por multiplicação
-    cria_hash(&tabela, B);
-    // inserção dos dados na tabela hash com hash por multiplicação
-    inicia_tempo();
-    for (int i = 0; i < N; i++) {
-        string leitura = insercoes[i];
-        // inserir insercoes[i] na tabela hash
-        colisoes_h_mul += inserir(&tabela, leitura, B, &h_mul);
-    }
-    double tempo_insercao_h_mul = finaliza_tempo();
-
-    // busca dos dados na tabela hash com hash por multiplicação
-    inicia_tempo();
-    for (int i = 0; i < M; i++) {
-        string consulta = consultas[i];
-        if(busca_hash(&tabela, consulta, B, &h_mul) != -1){
-            encontrados_h_mul++;
+        // busca dos dados na tabela hash com hash por divisão
+        inicia_tempo();
+        for (int i = 0; i < M; i++) {  
+            string consulta = consultas[i];
+            if(busca_hash(&tabela, consulta, B, &h_div) != -1){
+                encontrados_h_div++;
+            }
         }
+        tempos_busca_div[k] = finaliza_tempo();
+        soma_clocks_busca_div += tempos_busca_div[k];
+        printf("Busca numero    : %d -> Tempo de busca:  %fs\n", k+1, tempos_busca_div[k]);
+
+        // destroi tabela hash com hash por divisão
+        destroi_hash(&tabela, B);
+
     }
-    double tempo_busca_h_mul = finaliza_tempo();
 
-    // destroi tabela hash com hash por multiplicação
-    destroi_hash(&tabela, B);
+    double soma_clocks_insercao_mul = 0;
+    double soma_clocks_busca_mul = 0;
+    double tempos_insercao_mul[num_rep];
+    double tempos_busca_mul[num_rep];
 
-    printf("Hash por Divisão\n");
-    printf("Colisões na inserção: %d\n", colisoes_h_div);
-    printf("Tempo de inserção   : %fs\n", tempo_insercao_h_div);
-    printf("Tempo de busca      : %fs\n", tempo_busca_h_div);
-    printf("Itens encontrados   : %d\n", encontrados_h_div);
+    for (int k = 0; k < num_rep; k++) {
+
+        // cria tabela hash com hash por multiplicação
+        hash tabela;
+        cria_hash(&tabela, B);
+        // inserção dos dados na tabela hash com hash por multiplicação
+        inicia_tempo();
+        for (int i = 0; i < N; i++) {
+            string leitura = insercoes[i];
+            // inserir insercoes[i] na tabela hash
+            colisoes_h_mul += inserir(&tabela, leitura, B, &h_mul);
+        }
+        tempos_insercao_mul[k] = finaliza_tempo();
+        soma_clocks_insercao_mul += tempos_insercao_mul[k];
+        printf("Insercao numero : %d -> Tempo de busca:  %fs\n", k+1, tempos_insercao_mul[k]);
+
+        // busca dos dados na tabela hash com hash por multiplicação
+        inicia_tempo();
+        for (int i = 0; i < M; i++) {
+            string consulta = consultas[i];
+            if(busca_hash(&tabela, consulta, B, &h_mul) != -1){
+                encontrados_h_mul++;
+            }
+        }
+        tempos_busca_mul[k] = finaliza_tempo();
+        soma_clocks_busca_mul += tempos_busca_mul[k];
+        printf("Busca numero    : %d -> Tempo de busca:  %fs\n", k+1, tempos_busca_mul[k]);
+
+        // destroi tabela hash com hash por multiplicação
+        destroi_hash(&tabela, B);
+
+    }
+
+    float desvio_insercao_div = desvio_padrao(tempos_insercao_div);
+    float desvio_busca_div = desvio_padrao(tempos_busca_div);
+    printf("\n---> Hash por Divisao <---\n");
+    printf("--> Tempo medio de insercao   :\t%fs\n", soma_clocks_insercao_div/num_rep);
+    printf("--> Desvio padrao da insercao :\t%f\n", desvio_insercao_div);
+    printf("--> Tempo medio de busca      :\t%fs\n", soma_clocks_busca_div/num_rep);
+    printf("--> Desvio padrao da busca    :\t%f\n", desvio_busca_div);
+
     printf("\n");
-    printf("Hash por Multiplicação\n");
-    printf("Colisões na inserção: %d\n", colisoes_h_mul);
-    printf("Tempo de inserção   : %fs\n", tempo_insercao_h_mul);
-    printf("Tempo de busca      : %fs\n", tempo_busca_h_mul);
-    printf("Itens encontrados   : %d\n", encontrados_h_mul);
+
+    float desvio_insercao_mul = desvio_padrao(tempos_insercao_mul);
+    float desvio_busca_mul = desvio_padrao(tempos_busca_mul);
+    printf("---> Hash por Multiplicacao <---\n");
+    printf("--> Tempo medio de insercao   :\t%fs\n", soma_clocks_insercao_mul/num_rep);
+    printf("--> Desvio padrao da insercao :\t%f\n", desvio_insercao_mul);
+    printf("--> Tempo medio de busca      :\t%fs\n", soma_clocks_busca_mul/num_rep);
+    printf("--> Desvio padrao da busca    :\t%f\n", desvio_busca_mul);
 
     return 0;
 }
