@@ -185,8 +185,10 @@ int main(int argc, char const *argv[]) {
         tempos_busca[k] = finaliza_tempo();
         soma_clocks_busca += tempos_busca[k];
         printf("Busca numero    : %d -> Tempo de busca:  %fs\n", k+1, tempos_busca[k]);
+        printf("Elementos encontrados : %d\n\n", encontrados);
 
         // limpa a tabela hash
+        encontrados = 0;
         liberar_tabela(tabela_hash, B);
 
     }
