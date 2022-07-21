@@ -222,8 +222,10 @@ int main(int argc, char const *argv[]) {
         tempos_busca_div[k] = finaliza_tempo();
         soma_clocks_busca_div += tempos_busca_div[k];
         printf("Busca numero    : %d -> Tempo de busca:  %fs\n", k+1, tempos_busca_div[k]);
+        printf("Elementos encontrados : %d\n\n", encontrados_h_div);
 
         // limpa a tabela hash com hash por divisão
+        encontrados_h_div = 0;
         liberar_tabela(tabela_hash_div, B);
 
     }
@@ -259,8 +261,10 @@ int main(int argc, char const *argv[]) {
         tempos_busca_mul[k] = finaliza_tempo();
         soma_clocks_busca_mul += tempos_busca_mul[k];
         printf("Busca numero    : %d -> Tempo de busca:  %fs\n", k+1, tempos_busca_mul[k]);
+        printf("Elementos encontrados : %d\n\n", encontrados_h_mul);
 
         // limpa a tabela hash com hash por multiplicação
+        encontrados_h_mul = 0;
         liberar_tabela(tabela_hash_mul, B);
 
     }
