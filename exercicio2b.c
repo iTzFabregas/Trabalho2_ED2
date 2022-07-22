@@ -185,10 +185,8 @@ int main(int argc, char const *argv[]) {
         tempos_busca[k] = finaliza_tempo();
         soma_clocks_busca += tempos_busca[k];
         printf("Busca numero    : %d -> Tempo de busca:  %fs\n", k+1, tempos_busca[k]);
-        printf("Elementos encontrados : %d\n\n", encontrados);
 
         // limpa a tabela hash
-        encontrados = 0;
         liberar_tabela(tabela_hash, B);
 
     }
@@ -200,6 +198,8 @@ int main(int argc, char const *argv[]) {
     printf("--> Desvio padrao da insercao :\t%f\n", desvio_insercao);
     printf("--> Tempo medio de busca      :\t%fs\n", soma_clocks_busca/num_rep);
     printf("--> Desvio padrao da busca    :\t%f\n", desvio_busca);
+    printf("--> Encontrados    :\t%d\n", encontrados/3);
+    printf("--> Colisoes    :\t%d\n", colisoes/3);
 
     return 0;
 }
